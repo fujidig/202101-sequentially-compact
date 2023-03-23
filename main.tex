@@ -1,0 +1,307 @@
+\documentclass[uplatex,dvipdfmx]{jsarticle}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{framed}
+\usepackage{braket}
+\usepackage{bm}
+\usepackage{mathrsfs}
+\usepackage{mathabx}
+\usepackage{accents}
+\usepackage{tocloft}
+\usepackage[dvipdfmx]{graphicx}
+\usepackage{tikz}
+\usepackage{url}
+\usepackage{color}
+\usepackage{xifthen}
+\usepackage{xcolor}
+\usepackage{framed}
+\usepackage{mathtools}
+\usepackage[explicit]{titlesec}
+\usepackage[normalem]{ulem}
+\usepackage[dvipdfmx]{hyperref}
+\usepackage{pxjahyper}
+\usepackage{mdframed}
+\usepackage[backend=biber,style=numeric,sorting=none,doi=false,isbn=false,url=false]{biblatex}
+\addbibresource{bib.bib}
+
+\usetikzlibrary{positioning}
+\usetikzlibrary{calc}
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{cd}
+
+\newcommand{\scrN}{\mathcal{N}}
+\newcommand{\scrC}{\mathcal{C}}
+\newcommand{\X}{\mathcal{X}}
+\newcommand{\Y}{\mathcal{Y}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\range}{\operatorname{ran}}
+\newcommand{\dom}{\operatorname{dom}}
+\newcommand{\append}{{}^\frown}
+\newcommand{\boldsig}{\boldsymbol{\Sigma}}
+\newcommand{\boldpi}{\boldsymbol{\Pi}}
+\newcommand{\bolddelta}{\boldsymbol{\Delta}}
+\newcommand{\Ordinals}{\mathrm{On}}
+\newcommand\forces{\Vdash}
+\newcommand\notforces{\nVdash}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\frakt}{\mathfrak{t}}
+\newcommand{\s}{\mathfrak{s}}
+\newcommand{\scp}{\mathfrak{scp}}
+
+\renewcommand\emptyset{\varnothing}
+\renewcommand\subset{\subseteq}
+\renewcommand{\setminus}{\smallsetminus}
+
+\def\pair<#1>{\langle #1 \rangle}
+
+\newcommand{\needtocheck}[1][]{%
+	\ifthenelse{\equal{#1}{}}{%
+		\textcolor{blue}{[要チェック]}%
+	}{%
+		\textcolor{blue}{[要チェック: #1]}%
+	}%
+}
+
+\newcommand{\todo}[1][]{%
+	\ifthenelse{\equal{#1}{}}{%
+		\textcolor{red}{[TODO]}%
+	}{%
+		\textcolor{red}{[TODO: #1]}%
+	}%
+}
+
+\theoremstyle{definition}
+\newtheorem{thm}{定理}
+\newtheorem*{thm*}{定理}
+\newtheorem{defi}[thm]{定義}
+\newtheorem*{defi*}{定義}
+\newtheorem{lem}[thm]{補題}
+\newtheorem*{lem*}{補題}
+\newtheorem{fact}[thm]{事実}
+\newtheorem*{fact*}{事実}
+\newtheorem*{formula*}{公式}
+\newtheorem{prop}[thm]{命題}
+\newtheorem*{prop*}{命題}
+\newtheorem{exm}[thm]{例}
+\newtheorem*{exm*}{例}
+\newtheorem{rmk}[thm]{注意}
+\newtheorem*{rmk*}{注意}
+\newtheorem{cor}[thm]{系}
+\newtheorem*{cor*}{系}
+\newtheorem*{notation*}{記法}
+\renewcommand{\proofname}{証明}
+\newenvironment{claim}[1]{\par\noindent\underline{主張:}\space#1}{}
+\newenvironment{claimproof}[1]{\par\noindent∵) \space#1}{\hfill //}
+
+\newtheoremstyle{named}{}{}{
+}{}{\bfseries}{.}{.5em}{#1 \thmnote{#3}}
+\theoremstyle{named}
+\newtheorem*{namedthm}{Theorem}
+\newtheorem*{namedcor}{Corollary}
+
+\renewenvironment{leftbar}[1][\hsize]
+{%
+\def\FrameCommand
+{%
+{\color{black}\vrule width 1pt}%
+\hspace{0pt}%
+\fboxsep=\FrameSep\colorbox{white}%
+}%
+\MakeFramed{\hsize#1\advance\hsize-\width\FrameRestore}%
+}
+{\endMakeFramed}
+
+\newcommand{\parahead}[1]{{\bfseries \uline{#1}}．}
+
+\title{点列コンパクト空間の直積，タワーおよび分割}
+\author{でぃぐ (@fujidig)}
+\date{2021年1月22日 作成 \\ 2023年3月23日 最終更新}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+位相空間の性質において，それが直積により保たれるかを考察することは重要である．本稿では点列コンパクト性が直積でどこまで保たれるか考えよう．
+\end{abstract}
+\tableofcontents
+
+\definecolor{reasontext}{rgb}{0,0,0}
+\definecolor{reasonbg}{rgb}{0.9,0.9,0.9}
+
+\vspace{0.5cm}
+
+\begin{mdframed}[backgroundcolor=reasonbg,linewidth=0]
+	\color{reasontext}
+	\textbf{追記(2023年3月23日)}：本稿には続きがある。
+	
+	\url{https://fujidig.github.io/202102-distributivity-number/distributivity-number.pdf}
+	
+	リンク先の記事では，点列コンパクト性が保たれなくなる最小の基数を組合せ論的に特徴付ける定理を紹介している．
+\end{mdframed}
+
+\begin{notation*}
+自然数全体の集合を$\omega$と書き，連続体濃度$2^{\aleph_0}$を$\mathfrak{c}$と書く．
+\end{notation*}
+
+本稿ではZFCを仮定する．
+
+\section{点列コンパクト空間}
+
+\begin{defi*}
+$X$を位相空間とする．$X$が{\bfseries 点列コンパクト}であるとはどんな$X$の点列$(x_n)_{n \in \omega}$についても，収束する部分列が存在することを言う．
+すなわち自然数の無限集合$A$があって$(x_n)_{n \in A}$が収束することを言う．
+\end{defi*}
+
+たとえばボルツァーノ・ワイエルシュトラスの定理より閉区間$[0, 1]$は点列コンパクトである．
+
+\begin{prop}
+点列コンパクト空間$2$個の直積は点列コンパクト．
+\end{prop}
+\begin{proof}
+$X, Y$を点列コンパクト空間とする．
+$X \times Y$の点列$(z_n)_{n \in \omega}$をとる．$z_n$の第$1$成分を$x_n$, 第$2$成分を$y_n$とする．
+$X$が点列コンパクトなので自然数の無限集合$A$があって$(x_n)_{n \in A}$が収束する．
+$Y$が点列コンパクトなので$A$の無限部分集合$B$があって$(y_n)_{n \in B}$が収束する．
+このとき$(x_n)_{n \in B}, (y_n)_{n \in B}$がともに収束するので，直積空間の性質より
+$(z_n)_{n \in B}$も収束する．
+\end{proof}
+
+この命題を繰り返し使えば，任意有限個の点列コンパクト空間の直積も点列コンパクトである．実は可算無限個でもうまくいく．
+
+\begin{prop}\label{ctblisok}
+点列コンパクト空間の可算無限個の直積は点列コンパクト．
+\end{prop}
+\begin{proof}
+$(X_n : n \in \omega)$を点列コンパクト空間の族とする．
+$(x_i : i \in \omega)$を$X = \prod_{n \in \omega} X_n$の点列とする．
+$A_0$を自然数の無限集合で$(x_i(0) : i \in \omega)$が収束するものとする．これは$X_0$の点列コンパクト性よりとれる．
+続いて$A_1$を$A_0$の無限集合で$(x_i(1) : i \in \omega)$が収束するものとする．これを繰り返し，$A_0 \supseteq A_1 \supseteq \dots$を得る．
+
+自然数列$(i_n : n \in \omega)$で$i_n \in A_n$かつ$i_n <  i_{n+1}$なものを得る．
+すると$B = \{ i_n : n \in \omega \}$について$(x_i : i \in B)$は収束する．
+\end{proof}
+
+一方で連続体濃度個だと失敗する．
+
+\begin{prop}\label{continuumisng}
+点列コンパクト空間の連続体濃度個の直積は点列コンパクトとは限らない．
+\end{prop}
+\begin{proof}
+$\{0, 1\}$の連続体濃度個の直積$X = \prod_{f \in 2^\omega} \{0, 1\}$を考える．
+次のような点列$(x_n)_{n \in \omega}$を考える: 第$n$項$x_n$の$f$成分は$f(n)$である．
+この数列の部分点列$(x_n)_{n \in A}$をとる．
+$A$の元を小さい順に並べたときの偶数番目の元である自然数に対して$1$を，そうでない元に対して$0$を返す$f$を考える．
+$(x_n(f))_{n \in A}$は$0$と$1$が交互に並んだ数列であるのでこれは収束しない．
+よって$(x_n)_{n \in A}$も収束しない．
+\end{proof}
+
+さて，ここで次の基数$\scp$ ($\mathrm{\mathfrak{s}equentially\ \mathfrak{c}ompact\ \mathfrak{p}roduct}$)を定義する．
+\begin{defi*}
+基数$\scp$は次を満たす最小の基数$\kappa$である．すなわち，点列コンパクト空間の列$(X_\alpha : \alpha < \kappa)$があってその直積$\prod_{\alpha < \kappa} X_\alpha$が点列コンパクトではない．
+\end{defi*}
+
+命題\ref{ctblisok}と命題\ref{continuumisng}より$\aleph_1 \le \scp \le \mathfrak{c}$が分かる．
+
+この基数$\scp$の，よく知られた基数不変量による下界と上界はそれぞれ$\frakt$と$\s$で得られる．このことは次の節で証明する．
+
+\section{タワー基数$\frakt$}
+
+\begin{defi*}
+\begin{itemize}
+    \item 集合$A, B$について$A \subset^* B$とは$A \setminus B $が有限集合となることを言い，$A$は$B$の{\bfseries ほとんど部分集合}であるという．
+    \item 各メンバーが$\omega$の無限な部分集合の族$\mathcal{F}$について，$\omega$の無限部分集合$P$が$\mathcal{F}$の{\bfseries 疑交叉} (pseudointersection)であるとは，すべての$F \in \mathcal{F}$について$P \subset^* F$となることを言う．
+\end{itemize}
+\end{defi*}
+
+\begin{defi*}
+$\omega$の無限部分集合の列$(T_\alpha : \alpha < \lambda)$であって，
+\begin{itemize}
+\item $\alpha < \beta < \lambda$ならば$T_\beta \subset^* T_\alpha$
+\item $\{T_\alpha : \alpha < \lambda\}$は疑交叉を持たない．
+\end{itemize}
+を満たすものを{\bfseries タワー}という．タワーの最小の長さ$\lambda$を{\bfseries タワー基数}といい，$\frakt$と書く．
+\end{defi*}
+
+\begin{prop}
+$\aleph_1 \le \frakt$.
+\end{prop}
+\begin{proof}
+可算の長さのタワー$(T_n : n \in \omega)$がないことを示せばよい．
+タワー$(T_n : n \in \omega)$があったとする．
+自然数の列$(i_n : n \in \omega)$を構成する．
+$i_0 = \min T_0$とする．
+$T_0 \cap \dots \cap  T_{n+1}$は無限集合なので$i_{n+1}$を$i_n$より大きい$T_0 \cap \dots \cap  T_{n+1}$の元とする．
+このとき$T = \{ i_n : n \in \omega \}$は$T$の疑交叉である．矛盾した．
+\end{proof}
+
+\begin{thm}
+$\frakt \le \scp$.
+\end{thm}
+\begin{proof}
+$\kappa < \frakt$と仮定して$\kappa < \scp$を示す．
+$(X_\alpha : \alpha < \kappa)$を点列コンパクト空間の列とする．$X = \prod_{\alpha < \kappa} X_\alpha$とおく．$(x_n)_{n \in \omega}$を$X$の点列とする．
+
+$(T_\alpha : \alpha \le \kappa)$と$(y_\alpha : \alpha < \kappa)$ (ただし$T_\alpha$は自然数の無限集合，$y_\alpha \in X_\alpha$)を次を満たすように構成する．
+
+\begin{enumerate}
+    \item $\forall \alpha, \beta \ (\alpha < \beta \le \kappa \Rightarrow T_\beta \subset^* T_\alpha)$.
+    \item すべての$\alpha$について$(x_n(\alpha) : n \in T_{\alpha+1})$は$y_\alpha$に収束する．
+\end{enumerate}
+
+これが構成できることを示そう．
+後続順序数のステップ．$T_\alpha$まで構成できたとしよう．このとき$T_{\alpha}$の無限部分集合$T_{\alpha+1}$で$(x_n(\alpha) : n \in T_{\alpha+1})$が収束するようにとる．これは点列コンパクト性よりとれる．その収束極限を$y_\alpha$とする．
+
+極限順序数のステップ．そこまでの疑交叉をとる．これは$\kappa < \frakt$よりとれる．
+
+さて，構成が終わったので，$A = T_\kappa$とおけば，$(x_n : n \in A)$は$y = (y_\alpha)_{\alpha < \kappa} \in X$に収束する．
+よって$X$は点列コンパクトである．
+\end{proof}
+
+\section{分割基数$\s$}
+
+\begin{defi*}
+$X, A \subset \omega$を無限集合とする．
+$A$が$X$を{\bfseries 分割する}とは$X \cap A$と$X \setminus A$がともに無限集合となることを言う．
+$\mathcal{A} \subset \mathcal{P}(\omega)$が{\bfseries 分割族}であるとは，どんな無限集合$X \subset \omega$についても$A \in \mathcal{A}$が存在して$A$が$X$を分割することである．
+
+$\s = \min \{|\mathcal{A}| : \text{$\mathcal{A}$は分割族} \}$とおき，$\s$を{\bfseries 分割基数}という．
+\end{defi*}
+
+\begin{thm}
+$\s$は$\{0, 1\}^\kappa$が点列コンパクトでないような最小の$\kappa$である．
+\end{thm}
+\begin{proof}
+$\mathcal{P}(\omega)$と$2^\omega$を同一視したとき
+\begin{align*}
+\text{$\mathcal{A}$が分割族} &\iff \text{どんな無限集合$X \subset \omega$についても$f \in \mathcal{A}$があって$f \upharpoonright X$が非収束} \\
+&\iff \neg (\text{ある無限集合$X \subset \omega$があってどんな$f \in \mathcal{A}$についても$f \upharpoonright X$が収束}).
+\end{align*}
+よって$\mathcal{A}$が濃度$\kappa$の分割族ならば，それは$\{0, 1\}^\kappa$が点列コンパクトでないことの証拠であるし，逆もしかりである．
+\end{proof}
+
+\begin{cor}
+$\scp \le \s$. \qed
+\end{cor}
+
+\section{まとめ}
+
+以上で
+\[
+\aleph_1 \le \frakt \le \scp \le \s \le \mathfrak{c}
+\]
+を得る．
+
+$\frakt$と$\s$とは分離できることが知られているが，$\scp$については分離できるか分かっていないようである．$\frakt$か$\s$のどちらかと等しいことがZFCで示せる可能性もある．
+
+$\frakt$はマーティンの公理によって持ち上げることができる．したがって，$\scp = \mathfrak{c} = \aleph_2$にすることができ，「$\aleph_1$個の点列コンパクト空間の直積は点列コンパクト」は無矛盾である．
+一方で連続体仮説が成り立っているなどの状況を考えれば，その否定も無矛盾なため，「$\aleph_1$個の点列コンパクト空間の直積は点列コンパクト」はZFCから独立している．
+
+\nocite{*}
+\printbibliography[title=参考文献]
+
+\end{document}
